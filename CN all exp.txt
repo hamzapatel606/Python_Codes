@@ -1,0 +1,662 @@
+<--------------------------------------------------------------------Ex 1---------------------------------------------------->
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define MAX_PACKET_SIZE 10
+#define BUCKET_CAPACITY 20
+
+int min(int a, int b) {
+    return a < b ? a : b;
+}
+
+void leaky_bucket_algorithm(int input[], int n) {
+    int bucket_size = 0;
+    int outgoing;
+    int i = 0;
+
+    while (i < n || bucket_size > 0) {
+        if (i < n && (bucket_size + input[i]) <= BUCKET_CAPACITY) 
+        {
+            bucket_size += input[i];
+            printf("Packet of size %d added to the bucket, current bucket size: %d\n", input[i], bucket_size);
+            i++;
+        } 
+        else 
+        {
+            outgoing = min(bucket_size, MAX_PACKET_SIZE);
+            bucket_size -= outgoing;
+            printf("Packet of size %d sent, remaining bucket size: %d\n", outgoing, bucket_size);
+            sleep(1);  // Simulating transmission delay
+        }
+    }
+}
+
+int main() {
+    int input[] = {7, 5, 6, 10, 12, 4, 8, 3};
+    int n = sizeof(input) / sizeof(input[0]);
+
+    printf("Leaky Bucket Algorithm Simulation\n");
+    leaky_bucket_algorithm(input, n);
+
+    return 0;
+}
+
+
+<--------------------------------------------------------------------Ex 2---------------------------------------------------->
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#define RTT 4
+#define TIMEOUT 4
+#define TOT_FRAMES 7
+enum {NO,YES} ACK;
+int main()
+{
+    int wait_time,i=1;
+    ACK=YES;
+    for(;i<=TOT_FRAMES;)
+        {
+            if (ACK==YES && i!=1)
+                printf("\nSENDER: ACK for Frame %d Received.\n",i-1);
+            printf("\nSENDER: Frame %d sent, Waiting for ACK...\n",i);
+            ACK=NO;
+            wait_time= rand() % 4+1;
+            if (wait_time==TIMEOUT)
+                printf("SENDER: ACK not received for Frame %d => TIMEOUT Resending Frame...",i);
+            else
+                {
+                    sleep(RTT);
+                    printf("\nRECEIVER: Frame %d received, ACK sent\n",i);
+                    printf("--------------------------------------------");
+                    ACK=YES;
+                    i++;
+                }
+        }
+    return 0;
+}
+
+<--------------------------------------------------------------------Ex 3---------------------------------------------------->
+
+#include <stdio.h>
+
+#define WINDOW_SIZE 4
+
+void slidingWindow(int arr[], int n, int k) {
+    for (int i = 0; i <= n - k; i++) {
+        int max = arr[i];
+        for (int j = 1; j < k; j++) {
+            if (arr[i + j] > max)
+                max = arr[i + j];
+        }
+        printf("%d ", max);
+    }
+}
+
+int main() {
+    int arr[] = {1, 3, -1, -3, 5, 3, 6, 7};
+    int n = sizeof(arr) / sizeof(arr[0]);
+    int window_size = 4;
+    slidingWindow(arr, n, window_size);
+    return 0;
+}
+
+
+<--------------------------------------------------------------------Ex 5---------------------------------------------------->
+
+#include <stdio.h>
+#include <limits.h>
+
+#define INFINITY 9999
+#define MAX_NODES 10
+
+// Function to implement the distance vector routing algorithm
+void distance_vector_routing(int costMatrix[MAX_NODES][MAX_NODES], int numNodes) {
+    int distance[MAX_NODES], from[MAX_NODES];
+    int i, j, k;
+
+    // Initialize distance and from arrays with the costMatrix
+    for (i = 0; i < numNodes; i++) {
+        for (j = 0; j < numNodes; j++) {
+            distance[j] = costMatrix[i][j];
+            from[j] = i;
+        }
+    }
+
+    // Iterations for the distance vector routing algorithm
+    for (k = 0; k < numNodes; k++) {
+        for (i = 0; i < numNodes; i++) {
+            for (j = 0; j < numNodes; j++) {
+                if (distance[i] > costMatrix[i][k] + distance[k]) {
+                    distance[i] = distance[k] + costMatrix[i][k];
+                    from[i] = k;
+                }
+            }
+        }
+    }
+
+    // Print the results
+    printf("Distance Vector Routing Algorithm Implementation\n");
+    printf("Source Node \t Destination Node \t Minimum Distance \t     Next Hop\n");
+    for (i = 0; i < numNodes; i++) {
+        printf("%d", i);
+        for (j = 0; j < numNodes; j++) {
+            printf(" \t\t\t %d \t\t\t %d \t\t\t %d\n", j, distance[j], from[j]);
+        }
+        printf("\n");
+    }
+    
+}
+
+int main() {
+    int numNodes = 4;
+    int costMatrix[MAX_NODES][MAX_NODES] = {
+        {0, 2, INFINITY, 6},
+        {2, 0, 3, INFINITY},
+        {INFINITY, 3, 0, 1},
+        {6, INFINITY, 1, 0}
+    };
+
+    distance_vector_routing(costMatrix, numNodes);
+
+    
+    return 0;
+}
+
+
+<--------------------------------------------------------------------Ex 1---------------------------------------------------->
+Write a program for congestion control using leaky bucket algorithm in C
+language and execute the same and display the result
+
+#include<stdio.h>
+#define bucketsize 1000
+#define n 5
+void bucketoutput(int *bucket,int op)
+{
+if(*bucket > 0 && *bucket > op)
+{
+*bucket= *bucket-op;
+printf("\n%d-outputed remaining is %d",op,*bucket);
+}
+else if(*bucket > 0)
+{
+printf("\nRemaining data output = %d",*bucket);
+*bucket=0;
+}
+}
+int main()
+{
+int op,newpack,oldpack=0,wt,i,j,bucket=0;
+printf("enter output rate");
+scanf("%d",&op);
+for(i=1;i<=n;i++)
+{
+newpack=rand()%500;
+printf("\n\n new packet size = %d",newpack);
+newpack=oldpack+newpack;
+wt=rand()%5;
+if(newpack<bucketsize)
+bucket=newpack;
+else
+{
+printf("\n%d = the newpacketand old pack is greater than bucketsize reject",newpack);
+bucket=oldpack;
+}
+printf("\nThe data in bucket = %d",bucket);
+printf("\n the next packet will arrive after = %dsec",wt);
+for(j=0;j<wt;j++)
+{
+bucketoutput(&bucket,op);
+sleep(1);
+}
+oldpack=bucket;
+}
+while(bucket>0)
+bucketoutput(&bucket,op);
+return 0;
+}
+
+<--------------------------------------------------------------------Ex 2---------------------------------------------------->
+Implement Stop and Wait Protocol in a C program and execute the same and
+display the result.
+
+#include <stdio.h>
+#include <stdlib.h>
+#define RTT 4
+#define TIMEOUT 4
+#define TOT_FRAMES 7
+enum {NO,YES} ACK;
+int main()
+{
+int wait_time,i=1;
+ACK=YES;
+for(;i<=TOT_FRAMES;)
+{
+if (ACK==YES && i!=1) CCN LAB 17ECL68
+Dept. of E&CE, VSMSRKIT, Nipani
+{
+printf("\nSENDER: ACK for Frame %d Received.\n",i-1);
+}
+printf("\nSENDER: Frame %d sent, Waiting for ACK...\n",i);
+ACK=NO;
+wait_time= rand() % 4+1;
+if (wait_time==TIMEOUT)
+{
+printf("SENDER: ACK not received for Frame %d=>TIMEOUT Resending Frame...",i);
+}
+else
+{
+sleep(RTT);
+printf("\nRECEIVER: Frame %d received, ACK sent\n",i);
+printf("--------------------------------------------");
+ACK=YES;
+i++;
+}
+}
+return 0;
+}
+
+
+<--------------------------------------------------------------------Ex 3---------------------------------------------------->
+Implement Sliding Window Protocol in a C program and execute the same
+and display the result.
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#define RTT 5
+int main()
+{
+int window_size,i,f,frames[50];
+printf("Enter window size: ");
+scanf("%d",&window_size);
+printf("\nEnternumber of frames to transmit: ");
+scanf("%d",&f);
+printf("\nEnter %d frames: ",f);
+for(i=1;i<=f;i++)
+scanf("%d",&frames[i]);
+printf("\nAfter sending %d frames at each stage sender waits for ACK",window_size);
+printf("\nSendingframes in the following manner....\n\n");
+for(i=1;i<=f;i++)
+{
+if(i%window_size!=0)
+{
+printf("%d",frames[i]);
+}
+else
+{
+printf(" %d\n",frames[i]);
+printf("SENDER: waiting for ACK...\n\n");
+sleep(RTT/2);
+printf("RECEIVER: Frames Received, ACK Sent\n");
+printf("-------------------------------------------\n");
+sleep(RTT/2);
+printf("SENDER:ACK received, sending next frames\n");
+}
+}
+if(f%window_size!=0)
+{
+printf("\nSENDER: waiting for ACK...\n");
+sleep(RTT/2);
+printf("\nRECEIVER:Frames Received, ACK Sent\n");
+printf("-------------------------------------------------\n");
+sleep(RTT/2);
+printf("SENDER:ACK received.");
+}
+return 0;
+}
+
+<--------------------------------------------------------------------Ex 4---------------------------------------------------->
+ To write a socket program for PING in Java.
+
+import java.util.*;
+public class PingDemo
+{
+public void Ping(String host)
+{
+try
+{
+Process p=Runtime.getRuntime().exec("Ping "+host);
+Scanner scan=new Scanner(p.getInputStream());
+while(scan.hasNextLine())
+{
+System.out.println(scan.nextLine());
+}
+}
+catch(Exception ex)
+{
+System.out.println("error"+ex);
+}
+}
+public static void main(String args[])
+{
+PingDemo P1=new PingDemo();
+P1.Ping(args[0]);
+}
+}
+
+
+<--------------------------------------------------------------------Ex 5---------------------------------------------------->
+To implement the distance vector routing algorithm.
+
+
+#include <stdio.h>
+#include <limits.h>
+
+#define INFINITY 9999
+#define MAX_NODES 10
+
+// Function to implement the distance vector routing algorithm
+void distance_vector_routing(int costMatrix[MAX_NODES][MAX_NODES], int numNodes) {
+    int distance[MAX_NODES], from[MAX_NODES];
+    int i, j, k;
+
+    // Initialize distance and from arrays with the costMatrix
+    for (i = 0; i < numNodes; i++) {
+        for (j = 0; j < numNodes; j++) {
+            distance[j] = costMatrix[i][j];
+            from[j] = i;
+        }
+    }
+
+    // Iterations for the distance vector routing algorithm
+    for (k = 0; k < numNodes; k++) {
+        for (i = 0; i < numNodes; i++) {
+            for (j = 0; j < numNodes; j++) {
+                if (distance[i] > costMatrix[i][k] + distance[k]) {
+                    distance[i] = distance[k] + costMatrix[i][k];
+                    from[i] = k;
+                }
+            }
+        }
+    }
+
+    // Print the results
+    printf("Distance Vector Routing Algorithm Implementation\n");
+    printf("Source Node \t Destination Node \t Minimum Distance \t     Next Hop\n");
+    for (i = 0; i < numNodes; i++) {
+        printf("%d", i);
+        for (j = 0; j < numNodes; j++) {
+            printf(" \t\t\t %d \t\t\t %d \t\t\t %d\n", j, distance[j], from[j]);
+        }
+        printf("\n");
+    }
+    
+}
+
+int main() {
+    int numNodes = 4;
+    int costMatrix[MAX_NODES][MAX_NODES] = {
+        {0, 2, INFINITY, 6},
+        {2, 0, 3, INFINITY},
+        {INFINITY, 3, 0, 1},
+        {6, INFINITY, 1, 0}
+    };
+
+    distance_vector_routing(costMatrix, numNodes);
+
+    
+    return 0;
+}
+
+
+<--------------------------------------------------------------------Ex 6---------------------------------------------------->
+To implement link state routing algorithm.
+
+
+#include <stdio.h>
+#include <limits.h>
+
+#define MAX_NODES 5
+
+int minDistance(int dist[], int visited[]) {
+    int min = INT_MAX, min_index;
+
+    for (int v = 0; v < MAX_NODES; v++) {
+        if (visited[v] == 0 && dist[v] <= min) {
+            min = dist[v];
+            min_index = v;
+        }
+    }
+
+    return min_index;
+}
+
+void dijkstra(int graph[MAX_NODES][MAX_NODES], int src) {
+    int dist[MAX_NODES];
+    int visited[MAX_NODES];
+
+    for (int i = 0; i < MAX_NODES; i++) {
+        dist[i] = INT_MAX;
+        visited[i] = 0;
+    }
+
+    dist[src] = 0;
+
+    for (int count = 0; count < MAX_NODES - 1; count++) {
+        int u = minDistance(dist, visited);
+        visited[u] = 1;
+
+        for (int v = 0; v < MAX_NODES; v++) {
+            if (!visited[v] && graph[u][v] && dist[u] != INT_MAX && dist[u] + graph[u][v] < dist[v]) {
+                dist[v] = dist[u] + graph[u][v];
+            }
+        }
+    }
+
+    printf("Node\tDistance from Source\n");
+    for (int i = 0; i < MAX_NODES; i++) {
+        printf("%d \t\t %d\n", i, dist[i]);
+    }
+}
+
+int main() {
+    int graph[MAX_NODES][MAX_NODES] = {
+        {0, 2, 0, 6, 0},
+        {2, 0, 3, 8, 5},
+        {0, 3, 0, 0, 7},
+        {6, 8, 0, 0, 9},
+        {0, 5, 7, 9, 0}
+    };
+
+    printf("Link State Routing Algorithm\n");
+    dijkstra(graph, 0);
+
+    return 0;
+}
+
+<--------------------------------------------------------------------Ex 7---------------------------------------------------->
+To write a program in java to implement IP address configuration
+
+import java.io.*;
+import java.net.*;
+class Server
+{
+public static void main(String args[])
+{
+try
+{
+String str;
+BufferedReader buf1=new BufferedReader(new
+InputStreamReader(System.in));
+String ip=buf1.readLine();
+Runtime H=Runtime.getRuntime();
+Process p=H.exec("ipconfig " + ip);
+InputStream in=p.getInputStream();
+BufferedReader buf2=new BufferedReader(new
+InputStreamReader(in));
+while((str=buf2.readLine())!=null)
+{
+System.out.println(" " + str);
+}
+}
+catch(Exception e)
+{
+System.out.println(e.getMessage());
+}
+}
+}
+
+<--------------------------------------------------------------------Ex 8---------------------------------------------------->
+To Perform File Transfer in Client & Server Using TCP/IP.
+
+Client:
+import java.io.*;
+import java.net.*;
+import java.util.*;
+class Clientfile
+{
+public static void main(String args[])
+{
+try
+{
+BufferedReader in=new BufferedReader(new InputStreamReader(System.in));
+Socket clsct=new Socket("18.17.40.27",3128);
+DataInputStream din=new DataInputStream(clsct.getInputStream());
+DataOutputStream dout=new DataOutputStream(clsct.getOutputStream());
+System.out.println("Enter the file name:");
+String str=in.readLine();
+dout.writeBytes(str+'\n');
+System.out.println("Enter the new file name:");
+String str2=in.readLine();
+String str1,ss;
+FileWriter f=new FileWriter(str2);
+char buffer[];
+while(true)
+{
+str1=din.readLine();
+if(str1.equals("-1"))
+break;
+System.out.println(str1);
+buffer=new char[str1.length()];
+str1.getChars(0,str1.length(),buffer,0);
+f.write(buffer);
+}
+f.close();
+clsct.close();
+}
+catch (Exception e)
+{
+System.out.println(e);
+}
+}
+}
+Server:
+import java.io.*;
+import java.net.*;
+import java.util.*;
+class Serverfile
+{
+public static void main(String args[])
+{
+try
+{
+ServerSocket obj=new ServerSocket(3128);
+while(true)
+{
+Socket obj1=obj.accept();
+DataInputStream din=new DataInputStream(obj1.getInputStream());
+DataOutputStream dout=new DataOutputStream(obj1.getOutputStream());
+String str=din.readLine();
+FileReader f=new FileReader(str);
+BufferedReader b=new BufferedReader(f);
+String s;
+while((s=b.readLine())!=null)
+{
+System.out.println(s);
+dout.writeBytes(s+'\n');
+}
+f.close();
+dout.writeBytes("-1\n");
+}
+}
+catch(Exception e)
+{
+System.out.println(e);
+}
+}
+}
+
+<--------------------------------------------------------------------Ex 9---------------------------------------------------->
+To write a socket program for TRACE ROUTE in Java.
+
+//pingclient.java
+import java.io.*;
+import java.net.*;
+import java.util.Calendar;
+class pingclient
+{
+public static void main(String args[])throws Exception
+{
+String str;
+int c=0;
+long t1,t2;
+Socket s=new Socket("127.0.0.1",5555);
+DataInputStream dis=new DataInputStream(s.getInputStream());
+PrintStream out=new PrintStream(s.getOutputStream());
+while(c<4)
+{
+t1=System.currentTimeMillis();
+str="Welcome to network programming world";
+out.println(str);
+System.out.println(dis.readLine());
+t2=System.currentTimeMillis();
+System.out.println(";TTL="+(t2-t1)+"ms"); c++;
+}
+s.close();
+}
+//pingserver.java
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.text.*;
+class pingserver
+{
+public static void main(String args[])throws Exception
+{
+ServerSocket ss=new ServerSocket(5555); Socket
+s=ss.accept();
+int c=0;
+while(c<4)
+{
+DataInputStream dis=new DataInputStream(s.getInputStream());
+PrintStream out=new PrintStream(s.getOutputStream());
+String str=dis.readLine();
+out.println("Reply from"+InetAddress.getLocalHost()+";Length"+str.length()); c++;
+}
+s.close();}}
+
+<--------------------------------------------------------------------Ex 10---------------------------------------------------->
+To write a program in java to demonstrate the usage of nslookup command.
+
+import java.io.*;
+import java.net.*;
+class Server
+{
+public static void main(String args[])
+{
+try
+{
+String str;
+BufferedReader buf1=new BufferedReader(new
+InputStreamReader(System.in));
+String ip=buf1.readLine();
+Runtime H=Runtime.getRuntime();
+Process p=H.exec("nslookup" + ip);
+InputStream in=p.getInputStream();
+BufferedReader buf2=new BufferedReader(new
+InputStreamReader(in));
+while((str=buf2.readLine())!=null)
+{
+System.out.println(" " + str);
+}
+}
+catch(Exception e)
+{
+48
+System.out.println(e.getMessage());
+}
+}
+}
